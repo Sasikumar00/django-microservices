@@ -1,0 +1,65 @@
+# Mention the version of docker compose
+version: "3.8"
+
+# Mention the list of services
+services:
+  # Database service name
+  db:
+    # Mention the mysql version for building image
+    image: mysql:8.0
+
+    # To make sure the service restarts if stopped
+    restart: always
+
+    # Used to specify environment variables
+    environment:
+      - MYSQL_DATABASE=admin
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+
+    # Used to create a persisted volume that links the host's directory with the container's directory
+    # On host machine .dbdata is mounted with the default mysql data storage directory /var/lib/mysql in the container
+    # Syntax: host_path:container_path
+    volumes:
+      - .dbdata:/var/lib/mysql
+
+    # Used to link host's port with the container's port
+    # Syntax: host_port:container_port
+    ports:
+      - 33066:3306
+
+    # Used to check the health of the db container
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost --silent"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Backend service name
+  backend:
+    # To mention how to build the docker image
+    build:
+      # Mention the directory where the Dockerfile exists
+      context: .
+      # Specifies the name of the Dockerfile
+      dockerfile: Dockerfile
+
+    # To map the host/current machine's port to the container's internal port
+    # Example: The host's port 8000 is mapped to the container's port 8080
+    # Syntax: host_port:container_port
+    ports:
+      - 8000:8000
+
+    # Used to mount a persistent volume that links with directory on the host machine
+    # Any changes done in the host's directory will be reflected in the container as well
+    # Syntax: host_path:container_path
+    volumes:
+      - .:/app
+
+    # To make sure the db service is started before the backend service
+    depends_on:
+      # Backend not only depends on db but also will only start running when db container is healthy
+      db:
+        condition: service_healthy

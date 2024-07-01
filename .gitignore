@@ -1,0 +1,4 @@
+/admin/env
+/admin/.dbdata
+venv/
+.dbdata/
