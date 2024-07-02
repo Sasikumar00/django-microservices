@@ -45,6 +45,7 @@ services:
       context: .
       # Specifies the name of the Dockerfile
       dockerfile: Dockerfile
+    command: "python manage.py runserver 0.0.0.0:8000"
 
     # To map the host/current machine's port to the container's internal port
     # Example: The host's port 8000 is mapped to the container's port 8080
@@ -61,5 +62,14 @@ services:
     # To make sure the db service is started before the backend service
     depends_on:
       # Backend not only depends on db but also will only start running when db container is healthy
+      db:
+        condition: service_healthy
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "python -u consumer.py"
+    depends_on:
       db:
         condition: service_healthy

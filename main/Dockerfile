@@ -15,5 +15,3 @@ RUN pip install -r requirements.txt
 
 # Copy all the contents of the current working directory to app
 COPY . /app
-
-ENV FLASK_APP=main.py
